@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>菲律宾支票金额英文换算器</title>
+
+<style>
+/* ===== Mobile First ===== */
+body {
+    margin: 0;
+    background: #f2f2f2;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+}
+
+.container {
+    max-width: 420px;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+
+input {
+    width: 100%;
+    font-size: 18px;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 14px;
+    background: #007aff;
+    color: #fff;
+}
+
+button:active {
+    background: #005ecb;
+}
+
+.label {
+    margin-top: 18px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+textarea {
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-top: 6px;
+    box-sizing: border-box;
+}
+
+#resultEn {
+    height: 120px;
+    font-weight: bold;
+}
+
+#resultCn {
+    height: 80px;
+}
+
+.warning {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #c00;
+}
+
+.tip {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* ===== Desktop Enhancement ===== */
+@media (min-width: 768px) {
+    .container {
+        border-radius: 12px;
+        margin-top: 40px;
+        min-height: auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>菲律宾支票金额英文换算器</h1>
+
+    <input type="text" id="amount" placeholder="请输入金额，如 123456.78">
+
+    <button onclick="convert()">换算金额</button>
+
+    <div class="label">英文支票金额（填写在支票上）</div>
+    <textarea id="resultEn" readonly></textarea>
+  
+    <button onclick="copyText()">复制英文金额</button>
+
+    <div class="label">中文金额对照（仅核对）</div>
+    <textarea id="resultCn" readonly></textarea>
+
+    <div class="warning">
+        ⚠ 中文金额仅用于核对，菲律宾支票只接受英文金额
+    </div>
+<!-- 广告占位区域 -->
+<div class="ad-placeholder">
+    <!-- 这里将来可以植入广告代码，例如 Google AdSense 或其他 -->
+    广告位预留
+</div>
+
+    <div class="tip">
+        ✔ 自动转为英文大写<br>
+        ✔ 符合菲律宾银行支票规范<br>
+        ✔ Centavos 使用 xx/100 格式
+    </div>
+  
+   *所有权归菲龙充值所有
+</div>
+
+<script>
+function convert() {
+    let input = document.getElementById("amount").value.replace(/,/g, "");
+    if (isNaN(input) || input === "") {
+        alert("请输入正确的金额");
+        return;
+    }
+
+    let number = parseFloat(input).toFixed(2);
+    let parts = number.split(".");
+    let pesos = parseInt(parts[0]);
+    let cents = parts[1];
+
+    if (pesos === 0) {
+        alert("支票金额不能为 0");
+        return;
+    }
+
+    let en = numberToWords(pesos).toUpperCase() + " PESOS";
+    if (cents !== "00") en += " AND " + cents + "/100";
+    en += " ONLY";
+
+    document.getElementById("resultEn").value = en;
+    document.getElementById("resultCn").value = numberToChinese(pesos, cents);
+}
+
+/* ===== English ===== */
+function numberToWords(num) {
+    const ones = ["","one","two","three","four","five","six","seven","eight","nine"];
+    const teens = ["ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+    const tens = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+    const units = ["","thousand","million"];
+
+    let str = "", i = 0;
+    while (num > 0) {
+        let part = num % 1000;
+        if (part) str = chunk(part) + (units[i] ? " " + units[i] : "") + " " + str;
+        num = Math.floor(num / 1000);
+        i++;
+    }
+    return str.trim();
+
+    function chunk(n) {
+        let s = "";
+        if (n >= 100) {
+            s += ones[Math.floor(n/100)] + " hundred ";
+            n %= 100;
+        }
+        if (n >= 10 && n < 20) s += teens[n-10];
+        else {
+            s += tens[Math.floor(n/10)];
+            if (n%10) s += " " + ones[n%10];
+        }
+        return s.trim();
+    }
+}
+
+/* ===== Chinese ===== */
+function numberToChinese(integer, cents) {
+    const n = ["零","壹","贰","叁","肆","伍","陆","柒","捌","玖"];
+    const r = ["","拾","佰","仟"];
+    const u = ["","万","亿"];
+    let s = "", p = 0;
+
+    while (integer > 0) {
+        let sec = integer % 10000, secStr = "", zero = true;
+        for (let i = 0; i < 4; i++) {
+            let d = sec % 10;
+            if (d === 0) {
+                if (!zero) secStr = n[0] + secStr;
+                zero = true;
+            } else {
+                zero = false;
+                secStr = n[d] + r[i] + secStr;
+            }
+            sec = Math.floor(sec / 10);
+        }
+        if (secStr) s = secStr + u[p] + s;
+        p++;
+        integer = Math.floor(integer / 10000);
+    }
+
+    s += "比索";
+    let j = cents[0], f = cents[1];
+    if (j === "0" && f === "0") s += "整";
+    else {
+        if (j !== "0") s += n[j] + "角";
+        if (f !== "0") s += n[f] + "分";
+    }
+    return s;
+}
+
+function copyText() {
+    let t = document.getElementById("resultEn");
+    t.select();
+    document.execCommand("copy");
+    alert("已复制英文支票金额");
+}
+</script>
+
+</body>
+</html>
